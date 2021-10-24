@@ -96,12 +96,20 @@ const WalletsProvider: React.FC = ({ children }) => {
         ...data,
         id: uuid(),
       });
+      account.balance = data.type === "income" ? 
+        account.balance += data.value:
+        account.balance -= data.value;
 
       setSelectedWallet({
         ...selectedWallet,
         currentBalance: data.type === "income" ?
-          account.balance += data.value:
-          account.balance -= data.value,
+          selectedWallet.currentBalance += data.value:
+          selectedWallet.currentBalance -= data.value,
+        accounts: [
+          {
+            ...account,
+          }
+        ]
       });
       
       setWallets([ ...wallets.filter(wallet => wallet.id !== selectedWallet.id), selectedWallet ]);
