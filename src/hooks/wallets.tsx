@@ -89,7 +89,7 @@ const WalletsProvider: React.FC = ({ children }) => {
 
   const createTransaction = useCallback((accountId: string, data: Omit<Transaction, "id">) => {
     // FIXME: Not updating wallets state
-    const account = selectedWallet.accounts.find(account => account.id === accountId);
+    let account = selectedWallet.accounts.find(account => account.id === accountId);
 
     if(account) {
       account.transactions.push({
