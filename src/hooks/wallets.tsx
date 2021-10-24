@@ -13,7 +13,7 @@ interface WalletContextData {
   selectWallet(wallet: Wallet): void;
   unselectWallet(): void;
   
-  createWallet(data: Omit<Wallet, "id" | "accounts">): void;
+  createWallet(data: Omit<Wallet, "id" | "accounts" | "currentBalance">): void;
   deleteWallet(id: string): void;
   
   createAccount(data: Omit<Account, "id" | "transactions">): void;
@@ -37,17 +37,21 @@ const WalletsProvider: React.FC = ({ children }) => {
     setSelectedWallet({} as Wallet);
   }, []);
 
-  const createWallet = useCallback((data: Omit<Wallet, "id" | "accounts">) => {
-    wallets.push({
-      ...data,
-      id: uuid(),
-      accounts: [],
-    });
-  }, [wallets]);
+  const createWallet = useCallback((data: Omit<Wallet, "id" | "accounts" | "currentBalance">) => {
+    setWallets([
+      ...wallets,
+      {
+        ...data,
+        id: uuid(),
+        currentBalance: 0,
+        accounts: [],
+      }
+    ]);
+  }, [ wallets ]);
 
   const deleteWallet = useCallback((id: string) => {
     setWallets(wallets.filter(wallet => wallet.id !== id));
-  }, [wallets, setWallets]);
+  }, [ wallets ]);
   
   const createAccount = useCallback((data: Omit<Account, "id" | "transactions">) => {
     selectedWallet.accounts.push({
@@ -55,41 +59,54 @@ const WalletsProvider: React.FC = ({ children }) => {
       id: uuid(), 
       transactions: [],
     });
-  }, [selectedWallet]);
+
+    setWallets([ ...wallets.filter(item => item.id !== selectedWallet.id), selectedWallet ]);
+  }, [ selectedWallet, wallets ]);
 
   const deleteAccount = useCallback((accountId: string) => {
     let accountToDelete = selectedWallet.accounts?.find(account => account.id === accountId);
+
     if (accountToDelete) {
       selectedWallet.accounts.filter(account => account.id !== accountId);
       selectedWallet.currentBalance -= accountToDelete.balance;
+
+      setWallets([ ...wallets.filter(item => item.id !== selectedWallet.id), selectedWallet ]);
     }
-  }, [selectedWallet]);
+  }, [ selectedWallet, wallets ]);
 
   const createTransaction = useCallback((accountId: string, data: Omit<Transaction, "id">) => {
     let accountToChange = selectedWallet.accounts?.find(account => account.id === accountId);
+
     if (accountToChange) {
       accountToChange.transactions.push({
         ...data, 
         id: uuid(),
       });
+
+      setWallets([ ...wallets.filter(item => item.id !== selectedWallet.id), selectedWallet ]);
     }
-  }, [selectedWallet]);
+  }, [ selectedWallet, wallets ]);
 
   const deleteTransaction = useCallback((accountId: string, TransactionId: string) => {
     let accountToChange = selectedWallet.accounts?.find(account => account.id === accountId);
+
     if (accountToChange) {
       let transactionToDelete = accountToChange.transactions?.find(transaction => transaction.id === TransactionId);
+
       if (transactionToDelete) {
         accountToChange.transactions.filter(transaction => transaction.id !== TransactionId); 
+
         accountToChange.balance = transactionToDelete.type === "income" ? accountToChange.balance -= transactionToDelete.value : accountToChange.balance += transactionToDelete.value;
+        
         setSelectedWallet({
           ...selectedWallet,
           currentBalance: transactionToDelete.type === "income" ? accountToChange.balance -= transactionToDelete.value : accountToChange.balance += transactionToDelete.value
         })
+
+        setWallets([ ...wallets.filter(item => item.id !== selectedWallet.id), selectedWallet ]);
       }
     }
-    
-  }, [selectedWallet]);
+  }, [ selectedWallet, wallets ]);
   
   return (
     <WalletContext.Provider
@@ -111,7 +128,7 @@ const WalletsProvider: React.FC = ({ children }) => {
   );
 };
 
-const useWallet = (): WalletContextData => {
+const useWallets = (): WalletContextData => {
   const context = useContext(WalletContext);
 
   if(!context) {
@@ -121,4 +138,4 @@ const useWallet = (): WalletContextData => {
   return context;
 };
 
-export { WalletsProvider, useWallet };
+export { WalletsProvider, useWallets };
