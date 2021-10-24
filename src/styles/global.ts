@@ -1,5 +1,5 @@
 import { createGlobalStyle } from "styled-components";
-// import theme from "./theme";
+import theme from "./theme";
 
 export default createGlobalStyle`
   * {
@@ -14,6 +14,8 @@ export default createGlobalStyle`
   }
   body {
     -webkit-font-smoothing: antialiased;
+    background-color: ${theme.colors.backgroundDark};
+    color: ${theme.colors.text}
   }
   h1, h2, h3, h4, h5, h6, strong {
     font-weight: 500;
@@ -22,9 +24,3 @@ export default createGlobalStyle`
     cursor: pointer;
   }
 `;
-
-/*
-  // --- BODY ---
-  background-color: ${theme.colors.background};
-  color: ${theme.colors.darkGrey}
-*/
