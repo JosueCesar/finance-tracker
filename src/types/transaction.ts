@@ -1,7 +1,7 @@
 export default interface Transaction{
-  id: number;
+  id: string;
   date: Date;
   value: number;
   type: "income" | "expense";
-  class: string;
+  group: string;
 }
