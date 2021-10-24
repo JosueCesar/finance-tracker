@@ -50,17 +50,28 @@ const WalletsProvider: React.FC = ({ children }) => {
   }, [wallets, setWallets]);
   
   const createAccount = useCallback((data: Omit<Account, "id" | "transactions">) => {
-    // TODO:
-  }, []);
+    selectedWallet.accounts.push({
+      ...data,
+      id: uuid(), 
+      transactions: [],
+    });
+  }, [selectedWallet]);
 
-  const deleteAccount = useCallback((accountId: string) => {}, [
-    // TODO:
-  ]);
+  const deleteAccount = useCallback((accountId: string) => {
+    let accountToDelete = selectedWallet.accounts?.find(account => account.id === accountId);
+    if (accountToDelete) {
+      selectedWallet.accounts.filter(account => account.id !== accountId);
+      selectedWallet.currentBalance -= accountToDelete.balance;
+    }
+  }, [selectedWallet]);
 
   const createTransaction = useCallback((accountId: string, data: Omit<Transaction, "id">) => {
     let accountToChange = selectedWallet.accounts?.find(account => account.id === accountId);
     if (accountToChange) {
-      // accountToChange.transactions.push(data);
+      accountToChange.transactions.push({
+        ...data, 
+        id: uuid(),
+      });
     }
   }, [selectedWallet]);
 
