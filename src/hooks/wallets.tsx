@@ -20,7 +20,7 @@ interface WalletContextData {
   deleteAccount(accountId: string): void;
   
   createTransaction(accountId: string, data: Omit<Transaction, "id">): void;
-  deleteTransaction(accountId: string, TransactionId: string): void;
+  deleteTransaction(accountId: string, transactionId: string): void;
 }
 
 const WalletContext = createContext<WalletContextData>({} as WalletContextData);
@@ -54,20 +54,21 @@ const WalletsProvider: React.FC = ({ children }) => {
   }, [ wallets ]);
   
   const createAccount = useCallback((data: Omit<Account, "id" | "transactions">) => {
+    const account: Account = {
+      ...data,
+      id: uuid(),
+      transactions: [],
+    };
+
     setSelectedWallet({
       ...selectedWallet,
       accounts: [
-        ...selectedWallet.accounts,
-        {
-          ...data,
-          id: uuid(),
-          transactions: [],
-        }
+        account,
       ],
-      currentBalance: selectedWallet.currentBalance + data.balance,
-    })
+      currentBalance: selectedWallet.currentBalance + account.balance,
+    });
 
-    setWallets([ ...wallets.filter(item => item.id !== selectedWallet.id), selectedWallet ]);
+    setWallets([ ...wallets.filter(wallet => wallet.id !== selectedWallet.id), selectedWallet ]);
   }, [ selectedWallet, wallets ]);
 
   const deleteAccount = useCallback((accountId: string) => {
@@ -82,50 +83,58 @@ const WalletsProvider: React.FC = ({ children }) => {
         ]
       });
 
-      setWallets([ ...wallets.filter(item => item.id !== selectedWallet.id), selectedWallet ]);
+      setWallets([ ...wallets.filter(wallet => wallet.id !== selectedWallet.id), selectedWallet ]);
     }
   }, [ selectedWallet, wallets ]);
 
   const createTransaction = useCallback((accountId: string, data: Omit<Transaction, "id">) => {
-    // FIXME:
-    let accountToChange = selectedWallet.accounts?.find(account => account.id === accountId);
+    // FIXME: Not updating wallets state
+    const account = selectedWallet.accounts.find(account => account.id === accountId);
 
-    if (accountToChange) {
-      accountToChange.transactions.push({
-        ...data, 
+    if(account) {
+      account.transactions.push({
+        ...data,
         id: uuid(),
       });
 
       setSelectedWallet({
         ...selectedWallet,
-        currentBalance: data.type === "income" ? accountToChange.balance += data.value :
-                                                 accountToChange.balance -= data.value
-      })
-
-      setWallets([ ...wallets.filter(item => item.id !== selectedWallet.id), selectedWallet ]);
+        currentBalance: data.type === "income" ?
+          account.balance += data.value:
+          account.balance -= data.value,
+      });
+      
+      setWallets([ ...wallets.filter(wallet => wallet.id !== selectedWallet.id), selectedWallet ]);
     }
   }, [ selectedWallet, wallets ]);
 
-  const deleteTransaction = useCallback((accountId: string, TransactionId: string) => {
-    // FIXME:
-    let accountToChange = selectedWallet.accounts?.find(account => account.id === accountId);
+  const deleteTransaction = useCallback((accountId: string, transactionId: string) => {
+    // FIXME: Not working properly, it is making sum on sometimes on deletion, sometimes it decreases, it's realy UNSTABLE!
+    let account = selectedWallet.accounts.find(account => account.id === accountId);
 
-    if (accountToChange) {
-      let transactionToDelete = accountToChange.transactions?.find(transaction => transaction.id === TransactionId);
+    if(account) {
+      const transaction = account.transactions.find(item => item.id === transactionId);
 
-      if (transactionToDelete) {
-        accountToChange.transactions.filter(transaction => transaction.id !== TransactionId); 
+      if(transaction) {
+        account.transactions = account.transactions.filter(item => item.id !== transactionId);
 
-        accountToChange.balance = transactionToDelete.type === "income" ? accountToChange.balance -= transactionToDelete.value :
-                                                                          accountToChange.balance += transactionToDelete.value;
+        account.balance = transaction.type === "income" ?
+          account.balance -= transaction.value:
+          account.balance += transaction.value;
         
         setSelectedWallet({
           ...selectedWallet,
-          currentBalance: transactionToDelete.type === "income" ? accountToChange.balance -= transactionToDelete.value :
-                                                                  accountToChange.balance += transactionToDelete.value
-        })
+          currentBalance: transaction.type === "income" ?
+            selectedWallet.currentBalance - transaction.value:
+            selectedWallet.currentBalance + transaction.value,
+          accounts: [
+            {
+              ...account,
+            }
+          ]
+        });
 
-        setWallets([ ...wallets.filter(item => item.id !== selectedWallet.id), selectedWallet ]);
+        setWallets([ ...wallets.filter(wallet => wallet.id !== selectedWallet.id), selectedWallet ]);
       }
     }
   }, [ selectedWallet, wallets ]);
