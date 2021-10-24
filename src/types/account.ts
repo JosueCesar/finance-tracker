@@ -2,7 +2,7 @@ import Transaction from "./transaction"
 
 export default interface Account{
   id: string;
-  name: String;
+  name: string;
   balance: number;
   transactions: Transaction[];
 }
