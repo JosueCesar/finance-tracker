@@ -87,9 +87,10 @@ const WalletsProvider: React.FC = ({ children }) => {
   }, [ selectedWallet, wallets ]);
 
   const createTransaction = useCallback((accountId: string, data: Omit<Transaction, "id">) => {
+    // FIXME:
     let accountToChange = selectedWallet.accounts?.find(account => account.id === accountId);
 
-    if (accountToChange) { // FIXME:
+    if (accountToChange) {
       accountToChange.transactions.push({
         ...data, 
         id: uuid(),
@@ -97,8 +98,8 @@ const WalletsProvider: React.FC = ({ children }) => {
 
       setSelectedWallet({
         ...selectedWallet,
-        currentBalance: data.type === "income" ? accountToChange.balance -= data.value :
-                                                 accountToChange.balance += data.value
+        currentBalance: data.type === "income" ? accountToChange.balance += data.value :
+                                                 accountToChange.balance -= data.value
       })
 
       setWallets([ ...wallets.filter(item => item.id !== selectedWallet.id), selectedWallet ]);
@@ -106,6 +107,7 @@ const WalletsProvider: React.FC = ({ children }) => {
   }, [ selectedWallet, wallets ]);
 
   const deleteTransaction = useCallback((accountId: string, TransactionId: string) => {
+    // FIXME:
     let accountToChange = selectedWallet.accounts?.find(account => account.id === accountId);
 
     if (accountToChange) {
