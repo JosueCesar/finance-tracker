@@ -1,5 +1,5 @@
-export default interface Transaction{
-  id: number;
+export default interface Transaction {
+  id: string;
   date: Date;
   value: number;
   type: "income" | "expense";

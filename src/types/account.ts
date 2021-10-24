@@ -1,8 +1,8 @@
 import Transaction from "./transaction"
 
-export default interface Account{
-  id: number;
-  name: String;
+export default interface Account {
+  id: string;
+  name: string;
   balance: number;
   transactions: Transaction[];
 }
