@@ -56,16 +56,28 @@ const WalletsProvider: React.FC = ({ children }) => {
   const createAccount = useCallback((data: Omit<Account, "id" | "transactions">) => {
     setSelectedWallet({
       ...selectedWallet,
+<<<<<<< HEAD
       currentBalance: selectedWallet.currentBalance + data.balance,
+=======
+>>>>>>> f53bd5334cbd2162deec7d4700949f02794b076b
       accounts: [
         ...selectedWallet.accounts,
         {
           ...data,
+<<<<<<< HEAD
           id: uuid(), 
           transactions: [],
         }
       ]
     });
+=======
+          id: uuid(),
+          transactions: [],
+        }
+      ],
+      currentBalance: selectedWallet.currentBalance + data.balance,
+    })
+>>>>>>> f53bd5334cbd2162deec7d4700949f02794b076b
 
     setWallets([ ...wallets.filter(item => item.id !== selectedWallet.id), selectedWallet ]);
   }, [ selectedWallet, wallets ]);
@@ -80,7 +92,7 @@ const WalletsProvider: React.FC = ({ children }) => {
         accounts: [
           ...selectedWallet.accounts.filter(account => account.id !== accountId),
         ]
-      })
+      });
 
       setWallets([ ...wallets.filter(item => item.id !== selectedWallet.id), selectedWallet ]);
     }
@@ -95,6 +107,12 @@ const WalletsProvider: React.FC = ({ children }) => {
         id: uuid(),
       });
 
+      setSelectedWallet({
+        ...selectedWallet,
+        currentBalance: data.type === "income" ? accountToChange.balance -= data.value :
+                                                 accountToChange.balance += data.value
+      })
+
       setWallets([ ...wallets.filter(item => item.id !== selectedWallet.id), selectedWallet ]);
     }
   }, [ selectedWallet, wallets ]);
@@ -108,11 +126,13 @@ const WalletsProvider: React.FC = ({ children }) => {
       if (transactionToDelete) {
         accountToChange.transactions.filter(transaction => transaction.id !== TransactionId); 
 
-        accountToChange.balance = transactionToDelete.type === "income" ? accountToChange.balance -= transactionToDelete.value : accountToChange.balance += transactionToDelete.value;
+        accountToChange.balance = transactionToDelete.type === "income" ? accountToChange.balance -= transactionToDelete.value :
+                                                                          accountToChange.balance += transactionToDelete.value;
         
         setSelectedWallet({
           ...selectedWallet,
-          currentBalance: transactionToDelete.type === "income" ? accountToChange.balance -= transactionToDelete.value : accountToChange.balance += transactionToDelete.value
+          currentBalance: transactionToDelete.type === "income" ? accountToChange.balance -= transactionToDelete.value :
+                                                                  accountToChange.balance += transactionToDelete.value
         })
 
         setWallets([ ...wallets.filter(item => item.id !== selectedWallet.id), selectedWallet ]);
