@@ -54,12 +54,18 @@ const WalletsProvider: React.FC = ({ children }) => {
   }, [ wallets ]);
   
   const createAccount = useCallback((data: Omit<Account, "id" | "transactions">) => {
-    selectedWallet.accounts.push({
-      ...data,
-      id: uuid(), 
-      transactions: [],
+    setSelectedWallet({
+      ...selectedWallet,
+      currentBalance: selectedWallet.currentBalance + data.balance,
+      accounts: [
+        ...selectedWallet.accounts,
+        {
+          ...data,
+          id: uuid(), 
+          transactions: [],
+        }
+      ]
     });
-    selectedWallet.currentBalance += data.balance;
 
     setWallets([ ...wallets.filter(item => item.id !== selectedWallet.id), selectedWallet ]);
   }, [ selectedWallet, wallets ]);
@@ -68,8 +74,13 @@ const WalletsProvider: React.FC = ({ children }) => {
     let accountToDelete = selectedWallet.accounts?.find(account => account.id === accountId);
 
     if (accountToDelete) {
-      selectedWallet.accounts.filter(account => account.id !== accountId);
-      selectedWallet.currentBalance -= accountToDelete.balance;
+      setSelectedWallet({
+        ...selectedWallet,
+        currentBalance: selectedWallet.currentBalance - accountToDelete.balance,
+        accounts: [
+          ...selectedWallet.accounts.filter(account => account.id !== accountId),
+        ]
+      })
 
       setWallets([ ...wallets.filter(item => item.id !== selectedWallet.id), selectedWallet ]);
     }
